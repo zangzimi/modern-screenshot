@@ -39,11 +39,17 @@ export async function embedWebFont<T extends Element>(
       }
     })
 
+    // Collect rules from @import declarations into a detached stylesheet
+    // to avoid mutating the live document's stylesheets via insertRule().
+    const tempDoc = ownerDocument.implementation.createHTMLDocument('')
+    const tempStyleEl = tempDoc.createElement('style')
+    tempDoc.head.appendChild(tempStyleEl)
+    const tempStyleSheet = tempStyleEl.sheet!
+
     await Promise.all(
       styleSheets.flatMap((styleSheet) => {
-        return Array.from(styleSheet.cssRules).map(async (cssRule, index) => {
+        return Array.from(styleSheet.cssRules).map(async (cssRule) => {
           if (isCSSImportRule(cssRule)) {
-            let importIndex = index + 1
             const baseUrl = cssRule.href
             let cssText = ''
             try {
@@ -62,12 +68,7 @@ export async function embedWebFont<T extends Element>(
             )
             for (const rule of parseCss(replacedCssText)) {
               try {
-                styleSheet.insertRule(
-                  rule,
-                  rule.startsWith('@import')
-                    ? (importIndex += 1)
-                    : styleSheet.cssRules.length!,
-                )
+                tempStyleSheet.insertRule(rule, tempStyleSheet.cssRules.length)
               }
               catch (error) {
                 context.log.warn('Error inserting rule from remote css import', { rule, error })
@@ -77,6 +78,9 @@ export async function embedWebFont<T extends Element>(
         })
       }),
     )
+
+    if (tempStyleSheet.cssRules.length)
+      styleSheets.push(tempStyleSheet)
 
     const cssRules: CSSRule[] = []
     styleSheets.forEach((sheet) => {
