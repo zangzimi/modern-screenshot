@@ -1,3 +1,14 @@
+# [4.7.0](https://github.com/qq15725/modern-screenshot/compare/v4.6.8...v4.7.0) (2026-04-16)
+
+
+### Bug Fixes
+
+* clone documentElement instead of body for same-origin iframes ([0c3871a](https://github.com/qq15725/modern-screenshot/commit/0c3871a92ef9b5d918959a88e47e74d05fa46188))
+* delete position when copy root element styles ([328379d](https://github.com/qq15725/modern-screenshot/commit/328379d01381a03be746444212464f7fa48a4ab8))
+* use detached document for [@import](https://github.com/import) rule processing ([719fb4e](https://github.com/qq15725/modern-screenshot/commit/719fb4e883d4c0574974e1caf28e51dfeb20f4fe))
+
+
+
 ## [4.6.8](https://github.com/qq15725/modern-screenshot/compare/v4.6.7...v4.6.8) (2026-01-26)
 
 
