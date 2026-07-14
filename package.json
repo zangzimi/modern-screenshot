@@ -5,6 +5,7 @@
   "packageManager": "pnpm@9.15.1",
   "description": "Quickly generate image from DOM node using HTML5 canvas and SVG",
   "author": "wxm",
+  "prettier": false,
   "license": "MIT",
   "homepage": "https://github.com/qq15725/modern-screenshot",
   "repository": {
@@ -63,11 +64,10 @@
     "coverage": "vitest run --coverage",
     "build:lib": "vite build && unbuild",
     "build:worker": "vite build --config vite.worker.config.ts",
-    "build": "pnpm build:lib && pnpm build:worker",
+    "build": "npm run build:lib && npm run build:worker",
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
     "release": "bumpp package.json --commit \"release: v%s\" --push --all --tag",
-    "typecheck": "tsc --noEmit",
-    "prepare": "simple-git-hooks"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.8.0",
@@ -82,14 +82,10 @@
     "jest-image-snapshot": "^6.4.0",
     "lint-staged": "^15.2.10",
     "puppeteer": "^23.7.0",
-    "simple-git-hooks": "^2.11.1",
     "typescript": "^5.7.2",
     "unbuild": "^3.0.1",
     "vite": "^5.4.10",
     "vitest": "^2.1.4"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "pnpm lint-staged"
   },
   "lint-staged": {
     "*": "eslint src --fix"
