@@ -87,6 +87,15 @@ export async function embedWebFont<T extends Element>(
       unwrapCssLayers(sheet.cssRules, cssRules)
     })
 
+    // 同一导出内对已写入 SVG 的字体 CSS 去重，避免相同 @font-face 重复 append
+    const appendedFontCssTexts = new Set<string>()
+    const append = (cssText: string) => {
+      if (appendedFontCssTexts.has(cssText))
+        return
+      appendedFontCssTexts.add(cssText)
+      svgStyleElement.appendChild(ownerDocument.createTextNode(`${cssText}\n`))
+    }
+
     cssRules
       .filter(cssRule => (
         isCssFontFaceRule(cssRule)
@@ -96,25 +105,22 @@ export async function embedWebFont<T extends Element>(
       ))
       .forEach((value) => {
         const rule = value as CSSFontFaceRule
-        const cssText = fontCssTexts.get(rule.cssText)
-        if (cssText) {
-          svgStyleElement.appendChild(ownerDocument.createTextNode(`${cssText}\n`))
+        let promise = fontCssTexts.get(rule.cssText)
+        if (!promise) {
+          promise = replaceCssUrlToDataUrl(
+            rule.cssText,
+            rule.parentStyleSheet
+              ? rule.parentStyleSheet.href
+              : null,
+            context,
+          ).then(cssText => filterPreferredFormat(cssText, context))
+          fontCssTexts.set(rule.cssText, promise)
         }
-        else {
-          tasks.push(
-            replaceCssUrlToDataUrl(
-              rule.cssText,
-              rule.parentStyleSheet
-                ? rule.parentStyleSheet.href
-                : null,
-              context,
-            ).then((cssText) => {
-              cssText = filterPreferredFormat(cssText, context)
-              fontCssTexts.set(rule.cssText, cssText)
-              svgStyleElement.appendChild(ownerDocument.createTextNode(`${cssText}\n`))
-            }),
-          )
-        }
+        tasks.push(
+          promise.then((cssText) => {
+            append(cssText)
+          }),
+        )
       })
   }
 }
